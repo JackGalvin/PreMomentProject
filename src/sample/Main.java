@@ -17,98 +17,76 @@ import java.sql.SQLOutput;
 
 public class Main extends Application {
 
-    int forceCounter = 0;
+    float plankLength = 100; //glitch where plank position doesnt change but only in step pivot settings
+    double pivotPosition = 0;
 
-    public static void main(String[] args) {
-        launch(args);
+    HBox pivotConfig = new HBox();
+
+    public static void main(String[] args) { launch(args);}
+
+    private Slider createPivotPositionSlider(float plankLength){
+        this.plankLength = plankLength;
+        Slider pivotPositionSlider = new Slider();
+        pivotPositionSlider.setMin(0-(plankLength/2));
+        pivotPositionSlider.setMax(plankLength/2);
+        pivotPositionSlider.setValue(0);
+        return pivotPositionSlider;
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("TestMoments"); //stage = window scene = inside layout = what you use to make your scene
 
+        //Menu Plane s1
         BorderPane MomentLayout = new BorderPane();
         VBox MomentConfig = new VBox(10);
         MomentConfig.setStyle("-fx-background-color: #92e3df;");
-
         Label MomentMenuTitle = new Label("Config Menu");
         MomentMenuTitle.setFont(new Font("Arial", 20));
 
-        TextField sizeofPlank = new TextField("Plank Length");
-        Slider pivotPosition = new Slider(); //used for moment calculations
-
-        HBox Force1 = new HBox(10);
-        HBox Force2 = new HBox(10);
-        HBox Force3 = new HBox(10);
-        HBox Force4 = new HBox(10);
-        HBox Force5 = new HBox(10);
-        HBox Force6 = new HBox(10);
-
-        //VBox forceConfig = new VBox(10);
-        //addfoce button in moment config
-        //add new HBOX's to force config
-
+        //force stuff s3
+        VBox forceConfig = new VBox(10);
+        //force creator
         Button createForce = new Button("add new Force");
-        createForce.setOnAction(e -> {
+        createForce.setOnAction(e -> {forceConfig.getChildren().add(HBoxForce.extendHBox(plankLength,pivotPosition));});
 
-            if (forceCounter == 0){
-                HBox force1tablet = HBoxForce.extendHBox();
-                Force1.getChildren().add(force1tablet);
-                Force1.getChildren().remove(createForce); //technically could add create node because child can only have one parent
-                //HBox Force2 = new HBox(10);
-                Force2.getChildren().add(createForce);
-                MomentConfig.getChildren().addAll(Force2);
-                forceCounter++;
-            } else if (forceCounter == 1){
-                HBox force1tablet = HBoxForce.extendHBox();
-                Force2.getChildren().add(force1tablet);
-                Force2.getChildren().remove(createForce); //technically could add create node because child can only have one parent
-                //HBox Force3 = new HBox(10);
-                Force3.getChildren().add(createForce);
-                MomentConfig.getChildren().addAll(Force3);
-                forceCounter++;
-            } else if (forceCounter == 2){
-                HBox force1tablet = HBoxForce.extendHBox();
-                Force3.getChildren().add(force1tablet);
-                Force3.getChildren().remove(createForce); //technically could add create node because child can only have one parent
-                // HBox Force4 = new HBox(10);
-                Force4.getChildren().add(createForce);
-                MomentConfig.getChildren().addAll(Force4);
-                forceCounter++;
-            } else if (forceCounter == 3){
-                HBox force1tablet = HBoxForce.extendHBox();
-                Force4.getChildren().add(force1tablet);
-                Force4.getChildren().remove(createForce); //technically could add create node because child can only have one parent
-                Force5.getChildren().add(createForce);
-                MomentConfig.getChildren().addAll(Force5);
-                forceCounter++;
-            } else if (forceCounter == 4){
-                HBox force1tablet = HBoxForce.extendHBox();
-                Force5.getChildren().add(force1tablet);
-                Force5.getChildren().remove(createForce); //technically could add create node because child can only have one parent
-                // HBox Force4 = new HBox(10);
-                Force6.getChildren().add(createForce);
-                MomentConfig.getChildren().addAll(Force6);
-                forceCounter++;
-            } else if (forceCounter == 5){
-                HBox force1tablet = HBoxForce.extendHBox();
-                Force6.getChildren().add(force1tablet);
-                Force6.getChildren().remove(createForce); //technically could add create node because child can only have one parent
-                forceCounter++;
-            } else {
-                System.out.println("How are you seeing this?");
-            }
-
+        //Pivot setting s2 //could put in a function OR put in s1's set on action command sequence
+        Slider pivotPositionSlider = new Slider(); //used for moment calculations
+        Button submitPivot = new Button("Submit");
+        submitPivot.setOnAction(e -> {
+            pivotPosition = pivotPositionSlider.getValue();
+            MomentConfig.getChildren().remove(pivotConfig);
+            Label pivotValue = new Label("Pivot at: " + pivotPosition);
+            MomentConfig.getChildren().addAll(pivotValue,createForce,forceConfig);
         });
 
-        Force1.getChildren().add(createForce);
-        MomentConfig.getChildren().addAll(MomentMenuTitle,sizeofPlank,pivotPosition,Force1);
+        //Plank settings s1
+        HBox plankConfig = new HBox();
+        Label labelPlank = new Label("Plank Length");
+        TextField sizeOfPlank = new TextField("Plank Length");
+        Button submitPlank = new Button("Submit");
+        submitPlank.setOnAction(e -> {
+            plankLength = Float.parseFloat(sizeOfPlank.getText());
+            MomentConfig.getChildren().remove(plankConfig);
+            //HBox pivotConfig = new HBox();
+            Label plankValue = new Label("Plank length = " + plankLength);
+            pivotPositionSlider.setMin(0-(plankLength/2)); //here to use the new values not the old ones
+            pivotPositionSlider.setMax(plankLength/2);
+            pivotPositionSlider.setValue(0);
+            pivotConfig.getChildren().addAll(pivotPositionSlider,submitPivot);
+            MomentConfig.getChildren().addAll(plankValue,pivotConfig);
+        });
+        plankConfig.getChildren().addAll(labelPlank,sizeOfPlank,submitPlank);
+
+
+
+
+        MomentConfig.getChildren().addAll(MomentMenuTitle,plankConfig); //pivotPosition,createForce,forceConfig
         MomentLayout.setRight(MomentConfig);
         Scene scene1 = new Scene(MomentLayout, 1600, 900);
         primaryStage.setScene(scene1);
         primaryStage.show();
         //nextScene.setOnAction(e -> {primaryStage.setScene(scene2);}); //primaryStage is the parent. set scene"function that changes scene to", (scene2) //remember how to change scenes
-
     }
 
 }
